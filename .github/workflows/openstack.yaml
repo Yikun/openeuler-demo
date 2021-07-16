@@ -16,4 +16,4 @@ jobs:
       - name: Build and test
         run: |
           cd openstack
-          build.sh
+          sh build.sh
