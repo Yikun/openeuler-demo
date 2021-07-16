@@ -29,6 +29,7 @@ jobs:
       - name: Docker build
         run: |
           # Build docker image
+          cd openstack
           docker load < openEuler-docker.aarch64.tar.xz
           docker build . -t openeuler-20.03-lts-sp2:init
           
@@ -38,7 +39,7 @@ jobs:
           # Build docker image
           docker rm -f openstack || true
           docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
-          docker exec -ti openstack /opt/run.sh
+          docker exec -t openstack /opt/run.sh
 
       - name: Test Horizon
         run: |
