@@ -44,6 +44,7 @@ jobs:
 
       - name: Test Nova
         run: |
+          docker exec -t openstack bash -c 'source ~/admin-openrc;/usr/bin/nova-status upgrade check' || exit 1
           docker exec -t openstack bash -c 'source ~/admin-openrc;/usr/bin/openstack compute service list' || exit 1
 
       - name: Test Horizon
