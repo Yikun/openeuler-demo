@@ -1,9 +1,13 @@
 name: OpenStack Horizon test
 
-# Controls when the workflow will run
 on:
   pull_request:
     branches: [ main ]
+
+defaults:
+  run:
+    shell: bash
+    working-directory: openstack
 
 jobs:
   build:
@@ -13,16 +17,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Download 
+      - name: Cache images 
+        uses: actions/cache@v2
+        with:
+          path: openEuler-docker.aarch64*
+          key: ${{ runner.os }}-openeuler-docker
+
+      - name: Load base
         run: |
           if [ ! -f "openEuler-docker.aarch64.tar.xz" ]; then
             wget https://repo.openeuler.org/openEuler-20.03-LTS-SP2/docker_img/aarch64/openEuler-docker.aarch64.tar.xz
           fi
+          docker load < openEuler-docker.aarch64.tar.xz
 
       - name: Docker build
         run: |
           # Build docker image
-          docker load < openEuler-docker.aarch64.tar.xz
           docker build . -t openeuler-20.03-lts-sp2:init
           docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
 
@@ -32,7 +42,6 @@ jobs:
           cd openstack
           docker load < openEuler-docker.aarch64.tar.xz
           docker build . -t openeuler-20.03-lts-sp2:init
-          
 
       - name: Setup OpenStack build
         run: |
