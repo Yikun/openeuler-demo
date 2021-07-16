@@ -13,7 +13,38 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build and test
+      - name: Download 
         run: |
-          cd openstack
-          sh build.sh
+          if [ ! -f "openEuler-docker.aarch64.tar.xz" ]; then
+            wget https://repo.openeuler.org/openEuler-20.03-LTS-SP2/docker_img/aarch64/openEuler-docker.aarch64.tar.xz
+          fi
+
+      - name: Docker build
+        run: |
+          # Build docker image
+          docker load < openEuler-docker.aarch64.tar.xz
+          docker build . -t openeuler-20.03-lts-sp2:init
+          docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
+
+      - name: Docker build
+        run: |
+          # Build docker image
+          docker load < openEuler-docker.aarch64.tar.xz
+          docker build . -t openeuler-20.03-lts-sp2:init
+          
+
+      - name: Setup OpenStack build
+        run: |
+          # Build docker image
+          docker rm -f openstack || true
+          docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
+          docker exec -ti openstack /opt/run.sh
+
+      - name: Test Horizon
+        run: |
+          STATUSCODE=$(curl -m 10 -o /dev/null -s -w %{http_code} http://127.0.0.1:8000/dashboard/auth/login/)
+          if test $STATUSCODE -ne 200; then
+            echo "Horizon auth page: Failed with "$STATUSCODE"."
+          else
+            echo "Horizon auth page: OK, 200."
+          fi
