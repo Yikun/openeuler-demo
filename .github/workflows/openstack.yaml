@@ -42,6 +42,10 @@ jobs:
           docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
           docker exec -t openstack /opt/run.sh
 
+      - name: Test Nova
+        run: |
+          docker exec -t openstack bash -c 'source ~/admin-openrc;/usr/bin/openstack compute service list') || exit 1
+
       - name: Test Horizon
         run: |
           STATUSCODE=$(curl -m 10 -o /dev/null -s -w %{http_code} http://127.0.0.1:8000/dashboard/auth/login/)
