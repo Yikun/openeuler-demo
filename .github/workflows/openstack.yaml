@@ -34,6 +34,7 @@ jobs:
         run: |
           # Build docker image
           docker build . -t openeuler-20.03-lts-sp2:init
+          docker rm -f openstack
           docker run --name openstack -tid --privileged=true -p 8000:80 -h controller openeuler-20.03-lts-sp2:init
 
       - name: Docker build
