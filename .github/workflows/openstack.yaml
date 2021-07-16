@@ -47,6 +47,7 @@ jobs:
           STATUSCODE=$(curl -m 10 -o /dev/null -s -w %{http_code} http://127.0.0.1:8000/dashboard/auth/login/)
           if test $STATUSCODE -ne 200; then
             echo "Horizon auth page: Failed with "$STATUSCODE"."
+            exit 1
           else
             echo "Horizon auth page: OK, 200."
           fi
