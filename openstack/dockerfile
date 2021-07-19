@@ -1,0 +1,43 @@
+FROM openeuler-20.03-lts-sp2:latest
+
+
+# Install systemd init
+RUN yum install -y systemd vim
+
+# Add oepkg as 3rd yum repo
+COPY conf/OpenStack_Queens.repo /etc/yum.repos.d/
+RUN yum clean all && yum makecache
+
+# The conroller has been set by `docker run -h controller`
+RUN echo "127.0.0.1   controller" >> /etc/hosts
+
+# Install mysql
+RUN yum install mariadb mariadb-server python-PyMySQL -y
+
+# Configure mysql
+COPY conf/openstack.cnf /etc/my.cnf.d/
+
+# Install RabbitMQ
+RUN yum install rabbitmq-server -y
+
+# Install keystone
+RUN yum install openstack-keystone httpd mod_wsgi python2-mod_wsgi -y
+COPY conf/keystone.conf /etc/keystone/keystone.conf
+# Httpd config
+RUN echo "ServerName controller" >> /etc/httpd/conf/httpd.conf
+RUN ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+RUN yum install python2-openstackclient -y
+
+COPY conf/admin-openrc /root/
+
+# Install openstack-dashboard
+RUN yum install openstack-dashboard -y
+
+# Install Nova
+RUN yum install openstack-nova-api openstack-nova-conductor openstack-nova-compute -y
+COPY conf/nova.conf /etc/nova/
+
+COPY run.sh /opt/
+RUN chmod +x /opt/run.sh
+
+CMD ["/usr/sbin/init"]
